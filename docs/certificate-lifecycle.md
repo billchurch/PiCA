@@ -27,9 +27,11 @@ stateDiagram-v2
     end note
     
     note right of Pending
-        - CSR format validation
-        - Subject validation
-        - Policy compliance check
+        <ul style="text-align: left; padding-left: 20px;">
+        <li>CSR format validation
+        <li>Subject validation
+        <li>Policy compliance check
+        </ul>
     end note
     
     note right of Issued
@@ -43,8 +45,9 @@ stateDiagram-v2
     end note
     
     note right of Revoked
-        - Added to CRL
-        - OCSP status updated
+        <ul style="text-align: left; padding-left: 20px;">
+        <li>Added to CRL
+        <li>OCSP status updated
     end note
 ```
 
