@@ -1,0 +1,78 @@
+---
+name: pica-root-ca
+mmdebstrap:
+  architectures:
+    - arm64
+  mode: auto
+  variant: custom
+  suite: bookworm
+  mirrors:
+    - deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+    - deb http://deb.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+    - deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+  packages:
+    # Base system
+    - base-files
+    - base-passwd
+    - bash
+    - busybox
+    - coreutils
+    - dash
+    - debianutils
+    - diffutils
+    - dpkg
+    - e2fsprogs
+    - findutils
+    - gcc-12-base
+    - grep
+    - gzip
+    - hostname
+    - init
+    - libc-bin
+    - libcap2-bin
+    - login
+    - mount
+    - ncurses-base
+    - ncurses-bin
+    - passwd
+    - perl-base
+    - sed
+    - sysvinit-utils
+    - tar
+    - systemd
+    - systemd-sysv
+    - udev
+    # Security-related
+    - ca-certificates
+    - openssl
+    - sudo
+    - ufw
+    # YubiKey support
+    - yubikey-manager
+    - yubico-piv-tool
+    - pcscd
+    - pcsc-tools
+    # Development and tools
+    - git
+    - curl
+    - vim
+    - screen
+    - tmux
+    # Our CA software
+    - golang
+    - golang-cfssl
+  customize-hooks:
+    # Disable networking services for the offline Root CA
+    - |
+      #!/bin/bash
+      chroot $1 systemctl disable systemd-networkd
+      chroot $1 systemctl disable systemd-resolved
+      
+      # Set up firewall
+      chroot $1 ufw default deny incoming
+      chroot $1 ufw default deny outgoing
+      chroot $1 ufw enable
+      
+      # Create CA directories
+      mkdir -p $1/opt/pica/root-ca
+      chmod 700 $1/opt/pica/root-ca

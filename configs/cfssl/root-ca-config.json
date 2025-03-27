@@ -1,0 +1,21 @@
+{
+  "signing": {
+    "default": {
+      "expiry": "87600h"
+    },
+    "profiles": {
+      "subca": {
+        "usages": [
+          "cert sign",
+          "crl sign"
+        ],
+        "expiry": "43800h",
+        "ca_constraint": {
+          "is_ca": true,
+          "max_path_len": 0,
+          "max_path_len_zero": true
+        }
+      }
+    }
+  }
+}

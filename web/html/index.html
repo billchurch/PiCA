@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiCA - Certificate Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #7D56F4;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 200px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #7D56F4;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #6241D0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            color: #333;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #7D56F4;
+            color: white;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background-color: white;
+        }
+        .status-valid {
+            color: green;
+            font-weight: bold;
+        }
+        .status-revoked {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PiCA - Certificate Management</h1>
+    </header>
+
+    <div class="container">
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'Submit')">Submit CSR</button>
+            <button class="tablinks" onclick="openTab(event, 'List')">List Certificates</button>
+            <button class="tablinks" onclick="openTab(event, 'Revoke')">Revoke Certificate</button>
+        </div>
+
+        <div id="Submit" class="tabcontent" style="display: block;">
+            <div class="card">
+                <h2>Submit a Certificate Signing Request</h2>
+                <form id="csr-form">
+                    <div class="form-group">
+                        <label for="csr">Certificate Signing Request (PEM format):</label>
+                        <textarea id="csr" name="csr" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile">Certificate Profile:</label>
+                        <select id="profile" name="profile">
+                            <option value="server">Server</option>
+                            <option value="client">Client</option>
+                            <option value="code-signing">Code Signing</option>
+                            <option value="email-protection">Email Protection</option>
+                        </select>
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+                <div id="csr-result" style="display: none;">
+                    <h3>Certificate</h3>
+                    <textarea id="certificate-output" readonly></textarea>
+                    <button onclick="downloadCert()">Download Certificate</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="List" class="tabcontent">
+            <div class="card">
+                <h2>Certificate List</h2>
+                <button onclick="refreshCertList()">Refresh</button>
+                <div id="cert-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Serial Number</th>
+                                <th>Valid From</th>
+                                <th>Valid Until</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cert-table-body">
+                            <!-- Certificate data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="Revoke" class="tabcontent">
+            <div class="card">
+                <h2>Revoke a Certificate</h2>
+                <form id="revoke-form">
+                    <div class="form-group">
+                        <label for="serial">Certificate Serial Number:</label>
+                        <input type="text" id="serial" name="serial" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Revocation Reason:</label>
+                        <select id="reason" name="reason">
+                            <option value="keyCompromise">Key Compromise</option>
+                            <option value="caCompromise">CA Compromise</option>
+                            <option value="affiliationChanged">Affiliation Changed</option>
+                            <option value="superseded">Superseded</option>
+                            <option value="cessationOfOperation">Cessation Of Operation</option>
+                        </select>
+                    </div>
+                    <button type="submit">Revoke</button>
+                </form>
+                <div id="revoke-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+            
+            if (tabName === "List") {
+                refreshCertList();
+            }
+        }
+
+        // Submit CSR form
+        document.getElementById("csr-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            const csr = document.getElementById("csr").value;
+            const profile = document.getElementById("profile").value;
+            
+            fetch("/api/submit-csr", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    csr: csr,
+                    profile: profile
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("certificate-output").value = data.certificate;
+                document.getElementById("csr-result").style.display = "block";
+            })
+            .catch(error => {
+                alert("Error: " + error.message);
+            });
+        });
+
+        // Revoke certificate form
+        document.getElementById("revoke-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            const serialNumber = document.getElementById("serial").value;
+            const reason = document.getElementById("reason").value;
+            
+            fetch("/api/revoke", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    serialNumber: serialNumber,
+                    reason: reason
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const resultElement = document.getElementById("revoke-result");
+                resultElement.innerHTML = "<p>Certificate revoked successfully!</p>";
+                resultElement.style.display = "block";
+            })
+            .catch(error => {
+                alert("Error: " + error.message);
+            });
+        });
+
+        // List certificates
+        function refreshCertList() {
+            fetch("/api/certificates")
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tableBody = document.getElementById("cert-table-body");
+                tableBody.innerHTML = "";
+                
+                data.certificates.forEach(cert => {
+                    const row = document.createElement("tr");
+                    
+                    row.innerHTML = `
+                        <td>${cert.subject}</td>
+                        <td>${cert.serialNumber}</td>
+                        <td>${cert.notBefore}</td>
+                        <td>${cert.notAfter}</td>
+                        <td class="status-${cert.status.toLowerCase()}">${cert.status}</td>
+                        <td>
+                            <button onclick="downloadCertBySerial('${cert.serialNumber}')">Download</button>
+                            ${cert.status === "Valid" ? `<button onclick="prepareRevoke('${cert.serialNumber}')">Revoke</button>` : ''}
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert("Error: " + error.message);
+            });
+        }
+
+        function downloadCert() {
+            const certData = document.getElementById("certificate-output").value;
+            if (!certData) return;
+            
+            const blob = new Blob([certData], { type: 'application/x-pem-file' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'certificate.pem';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCertBySerial(serialNumber) {
+            fetch(`/api/certificate/${serialNumber}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.certificate) {
+                    throw new Error("Certificate data not available");
+                }
+                
+                const blob = new Blob([data.certificate], { type: 'application/x-pem-file' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Use subject name from info if available, otherwise use serial number
+                const filename = data.info && data.info.subject ? 
+                    `${data.info.subject}.pem` : `${serialNumber}.pem`;
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                alert("Error downloading certificate: " + error.message);
+            });
+        }
+
+        function prepareRevoke(serialNumber) {
+            document.getElementById("serial").value = serialNumber;
+            openTab({ currentTarget: document.querySelector('.tablinks:nth-child(3)') }, 'Revoke');
+        }
+    </script>
+</body>
+</html>

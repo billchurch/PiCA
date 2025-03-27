@@ -1,0 +1,126 @@
+---
+name: pica-sub-ca
+mmdebstrap:
+  architectures:
+    - arm64
+  mode: auto
+  variant: custom
+  suite: bookworm
+  mirrors:
+    - deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+    - deb http://deb.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
+    - deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+  packages:
+    # Base system
+    - base-files
+    - base-passwd
+    - bash
+    - busybox
+    - coreutils
+    - dash
+    - debianutils
+    - diffutils
+    - dpkg
+    - e2fsprogs
+    - findutils
+    - gcc-12-base
+    - grep
+    - gzip
+    - hostname
+    - init
+    - libc-bin
+    - libcap2-bin
+    - login
+    - mount
+    - ncurses-base
+    - ncurses-bin
+    - netbase
+    - passwd
+    - perl-base
+    - sed
+    - sysvinit-utils
+    - tar
+    - systemd
+    - systemd-sysv
+    - udev
+    # Networking
+    - iproute2
+    - iputils-ping
+    - net-tools
+    - netcat-openbsd
+    - openssh-server
+    - wireless-tools
+    - wpasupplicant
+    # Security-related
+    - ca-certificates
+    - openssl
+    - sudo
+    - ufw
+    # Web server for certificate interface
+    - nginx
+    # YubiKey support
+    - yubikey-manager
+    - yubico-piv-tool
+    - pcscd
+    - pcsc-tools
+    # Development and tools
+    - git
+    - curl
+    - vim
+    - screen
+    - tmux
+    # Our CA software
+    - golang
+    - golang-cfssl
+  customize-hooks:
+    # Set up networking and firewall for the online Sub CA
+    - |
+      #!/bin/bash
+      # Enable needed services
+      chroot $1 systemctl enable systemd-networkd
+      chroot $1 systemctl enable systemd-resolved
+      chroot $1 systemctl enable ssh
+      chroot $1 systemctl enable nginx
+      chroot $1 systemctl enable pcscd
+      
+      # Set up firewall - only allow SSH and HTTPS
+      chroot $1 ufw default deny incoming
+      chroot $1 ufw default allow outgoing
+      chroot $1 ufw allow ssh
+      chroot $1 ufw allow 443/tcp
+      chroot $1 ufw allow 8443/tcp
+      chroot $1 ufw enable
+      
+      # Create CA directories
+      mkdir -p $1/opt/pica/sub-ca
+      chmod 700 $1/opt/pica/sub-ca
+      
+      # Set up basic nginx configuration
+      cat > $1/etc/nginx/sites-available/pica-ca << 'EOF'
+      server {
+          listen 8443 ssl;
+          server_name _;
+          
+          ssl_certificate /opt/pica/sub-ca/nginx.crt;
+          ssl_certificate_key /opt/pica/sub-ca/nginx.key;
+          
+          ssl_protocols TLSv1.2 TLSv1.3;
+          ssl_prefer_server_ciphers on;
+          ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+          
+          root /var/www/html;
+          
+          location /api {
+              proxy_pass http://127.0.0.1:8080;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+          
+          location / {
+              index index.html;
+          }
+      }
+      EOF
+      
+      # Link the site
+      ln -sf $1/etc/nginx/sites-available/pica-ca $1/etc/nginx/sites-enabled/

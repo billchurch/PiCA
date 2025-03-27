@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  pica-sub-ca:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pica-sub-ca
+    volumes:
+      - ./certs:/app/certs
+      - ./csrs:/app/csrs
+      - ./logs:/app/logs
+      # USB passthrough for YubiKey
+      - /dev/bus/usb:/dev/bus/usb
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - TZ=UTC
+    restart: unless-stopped
+    privileged: true  # Required for YubiKey access
+    devices:
+      - /dev/usb:/dev/usb  # YubiKey device access
+    command: >
+      --config /app/configs/cfssl/sub-ca-config.json
+      --cert /app/certs/sub-ca.pem
+      --port 8080
+      --webroot /app/web/html
+      --certdir /app/certs
+      --csrdir /app/csrs
+
+  # Example of how to add the nginx proxy for HTTPS
+  nginx:
+    image: nginx:latest
+    container_name: pica-nginx
+    volumes:
+      - ./web/html:/usr/share/nginx/html
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./certs/nginx:/etc/nginx/certs
+    ports:
+      - "443:443"
+    depends_on:
+      - pica-sub-ca
+    restart: unless-stopped
+
+networks:
+  default:
+    name: pica-network
