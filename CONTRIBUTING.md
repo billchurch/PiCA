@@ -79,7 +79,7 @@ make run-web
 
 ## Security Issues
 
-If you discover a security vulnerability, please do NOT open an issue. Email [security@example.com](mailto:security@example.com) instead.
+If you discover a security vulnerability, please do NOT open an issue. Email ...something...I'll figure it out in a bit... instead.
 
 ## Code Style
 
