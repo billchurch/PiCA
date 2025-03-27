@@ -123,6 +123,24 @@ The following tasks are available:
   - `yubikey`: Forces YubiKey provider
   - Not set: Auto-detection
 
+## Crypto Provider Options
+
+PiCA supports different cryptographic provider types controlled via the `PICA_PROVIDER` environment variable:
+
+- `export PICA_PROVIDER=yubikey` - Force YubiKey provider
+- `export PICA_PROVIDER=software` - Force software provider
+- Not set - Auto-detect (YubiKey if available, otherwise software)
+
+The software provider stores keys and certificates in:
+- `~/.pica/keys/` - Private key storage (protected by file permissions)
+- `~/.pica/certs/` - Certificate storage
+
+When testing without a YubiKey, use:
+
+```bash
+export PICA_PROVIDER=software
+```
+
 ## USB Passthrough
 
 USB devices (like YubiKey) are passed through to the container using the mount configuration in `devcontainer.json`. This should work automatically, but if you're having issues:

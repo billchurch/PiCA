@@ -1,6 +1,10 @@
 # PiCA - Raspberry Pi Certificate Authority
 
-PiCA is a comprehensive Certificate Authority management system designed to run on Raspberry Pi devices with YubiKey integration for secure key storage. The system consists of an offline Root CA and an online Sub CA, both with secure key storage in YubiKey PIV slots.
+![logo](docs/images/logo_sm.png)
+
+PiCA has an ambitious goal to be a comprehensive Certificate Authority management system designed to run on Raspberry Pi devices with YubiKey integration for secure key storage. The system consists of an offline Root CA and an online Sub CA, both with secure key storage in YubiKey PIV slots.
+
+The current status of this project is extremely experimental... Features, APIs, and structure will most definitely change. 
 
 ```mermaid
 flowchart TD
@@ -21,6 +25,7 @@ flowchart TD
 - **Offline Root CA**: Secure, air-gapped certificate authority for maximum security
 - **Online Sub CA**: Network-connected certificate authority for issuing end-entity certificates
 - **YubiKey Integration**: All private keys stored on secure hardware using PIV slots
+- **Software Key Fallback**: Development and testing without requiring physical YubiKeys
 - **CFSSL Integration**: Built on CloudFlare's CFSSL for robust certificate management
 - **Terminal UI**: Charm Bracelet-based TUI for managing the CAs directly on the devices
 - **Web Interface**: Simple web interface for certificate management and CSR submission
@@ -118,6 +123,17 @@ PiCA uses YubiKeys for secure storage of CA private keys using the PIV applicati
 - PIN and PUK protection for YubiKey access
 - Management key for administrative operations
 
+## Cryptographic Provider Abstraction
+
+PiCA implements a flexible cryptographic provider abstraction layer:
+
+- **Hardware-based (YubiKey)**: For production use, with all private keys securely stored on YubiKey hardware
+- **Software-based**: For development, testing, and environments where YubiKeys are unavailable
+- **Automatic detection**: Seamlessly uses hardware when available, falls back to software when needed
+- **Environment control**: Force a specific provider type via `PICA_PROVIDER` environment variable
+
+This abstraction allows developers to work with PiCA even without physical YubiKeys while maintaining the same security architecture in production deployments.
+
 ## CFSSL Configuration
 
 PiCA leverages CFSSL for certificate operations with custom configurations:
@@ -197,6 +213,7 @@ Detailed documentation is available in the [docs](docs/) directory:
 - [Integration Guide](docs/integration-guide.md)
 - [Usage Guide](docs/usage-guide.md)
 - [YubiKey Setup](docs/yubikey-setup.md)
+- [Provider Abstraction](docs/provider-abstraction.md)
 
 ## Contributing
 

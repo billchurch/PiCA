@@ -63,6 +63,7 @@ flowchart TD
 - Keys never leave the secure hardware
 - PIN and PUK protection for YubiKey access
 - Management key for administrative operations
+- Software-based fallback for development and testing environments
 
 ### Network Security
 
@@ -136,10 +137,31 @@ sequenceDiagram
 ### Core Components
 
 - **CA Core**: Certificate authority functions using CFSSL
+- **Crypto Provider Abstraction**: Flexible key management with hardware and software options
 - **YubiKey Integration**: Hardware security module integration
 - **Web API**: RESTful API for certificate management
 - **TUI**: Terminal user interface for direct management
 - **Web UI**: Web interface for remote management
+
+### Crypto Provider Abstraction
+
+PiCA implements a provider abstraction layer that allows cryptographic operations to be performed using either hardware (YubiKey) or software-based keys:
+
+```mermaid
+flowchart TD
+    CA[CA Module] --> Provider[Provider Interface]
+    Provider --> YK[YubiKey Provider]
+    Provider --> SW[Software Provider]
+    YK --> YKAPI[YubiKey API]
+    SW --> FileStore[Secure File Storage]
+```
+
+Both providers implement the same interface, allowing the application to be agnostic about which provider is in use. This abstraction enables:
+
+- Development without physical YubiKeys
+- Testing in CI/CD environments
+- Degraded operation when hardware fails
+- Consistent API regardless of underlying implementation
 
 ### Software Stack
 

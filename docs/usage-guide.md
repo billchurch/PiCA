@@ -8,10 +8,11 @@ This document provides comprehensive instructions for using the PiCA Certificate
 2. [Sub CA Operations](#sub-ca-operations)
 3. [Certificate Management](#certificate-management)
 4. [YubiKey Operations](#yubikey-operations)
-5. [Web Interface](#web-interface)
-6. [Command Line Interface](#command-line-interface)
-7. [Maintenance Tasks](#maintenance-tasks)
-8. [Troubleshooting](#troubleshooting)
+5. [Provider Selection](#provider-selection)
+6. [Web Interface](#web-interface)
+7. [Command Line Interface](#command-line-interface)
+8. [Maintenance Tasks](#maintenance-tasks)
+9. [Troubleshooting](#troubleshooting)
 
 ## Root CA Operations
 
@@ -241,6 +242,37 @@ Warning: This will delete all certificates and keys!
 ykman piv reset
 ```
 
+## Provider Selection
+
+PiCA supports multiple cryptographic providers. By default, it will try to use a YubiKey if one is available, and fall back to software-based keys if not.
+
+### Using Hardware-based Keys (YubiKey)
+
+For production use, ensure a YubiKey is connected and use:
+
+```bash
+# Force YubiKey provider
+export PICA_PROVIDER=yubikey
+```
+
+### Using Software-based Keys
+
+For development or testing without a YubiKey:
+
+```bash
+# Force software provider
+export PICA_PROVIDER=software
+```
+
+### Provider Auto-detection
+
+By default, PiCA will automatically detect the best available provider:
+
+1. If a YubiKey is available, it will be used
+2. If no YubiKey is available, software-based keys will be used
+
+This behavior can be relied upon for most development workflows.
+
 ## Web Interface
 
 ### Navigating the Web Interface
@@ -373,6 +405,45 @@ ykman piv access change-management-key -P CURRENT_KEY -n NEW_KEY --protect
 
 ## Troubleshooting
 
+### Provider Issues
+
+#### Provider Auto-detection Problems
+
+1. Check the environment to see if a provider is forced:
+
+   ```bash
+   echo $PICA_PROVIDER
+   ```
+
+2. If using YubiKey provider, ensure the YubiKey is properly inserted.
+
+3. Force a specific provider for testing:
+
+   ```bash
+   # Force software provider
+   export PICA_PROVIDER=software
+   
+   # Or force YubiKey provider
+   export PICA_PROVIDER=yubikey
+   ```
+
+4. Check that the software provider directories exist:
+
+   ```bash
+   # Keys directory
+   ls -la ~/.pica/keys/
+   
+   # Certificates directory
+   ls -la ~/.pica/certs/
+   ```
+
+5. Create the directories if they don't exist:
+
+   ```bash
+   mkdir -p ~/.pica/keys ~/.pica/certs
+   chmod 700 ~/.pica/keys
+   ```
+
 ### YubiKey Issues
 
 #### YubiKey Not Detected
@@ -470,6 +541,13 @@ If the PIN is locked due to too many incorrect attempts:
 1. Check file permissions
 2. Verify the YubiKey is functioning
 3. Ensure the CA has the correct configuration for CRL generation
+
+#### "Failed to create provider"
+
+1. Verify that the requested provider type is available
+2. If using YubiKey provider, ensure the YubiKey is properly inserted
+3. If using software provider, ensure ~/.pica/keys and ~/.pica/certs directories exist
+4. Check if PICA_PROVIDER environment variable is set to a valid value ("yubikey" or "software")
 
 #### "No certificates shown in web interface"
 

@@ -2,6 +2,23 @@
 
 This document visualizes the YubiKey operations in the PiCA Certificate Authority system.
 
+## YubiKey Provider in PiCA
+
+PiCA uses a provider abstraction layer that allows it to work with or without a YubiKey. When a YubiKey is available, it uses the YubiKey provider which implements cryptographic operations using the hardware security module.
+
+```mermaid
+flowchart TD
+    CA[CA Module] --> ProvI[Provider Interface]
+    ProvI --> YKP[YubiKey Provider]
+    YKP --> YK[YubiKey Hardware]
+```
+
+This abstraction ensures that:
+
+1. All cryptographic operations use the YubiKey hardware when available
+2. Private keys never leave the secure hardware
+3. The system can fall back to software-based keys for development
+
 ## YubiKey PIV Slot Allocation
 
 ```mermaid
