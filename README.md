@@ -33,6 +33,7 @@ flowchart TD
 - **Web Interface**: Simple web interface for certificate management and CSR submission
 - **Custom Raspberry Pi Images**: Purpose-built OS images for Root CA and Sub CA
 - **Docker Support**: Containerized deployment option for the Sub CA
+- **Flexible Configuration**: Support for JSON/TOML config files, environment variables, and command-line options
 
 ## Architecture
 
@@ -94,6 +95,61 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
    ```bash
    make run-web
    ```
+
+## Configuration
+
+PiCA supports a flexible configuration system that allows settings to be provided in multiple ways:
+
+### Configuration Files (JSON or TOML)
+
+PiCA supports both JSON and TOML configuration files. Example files are provided in the `configs/examples` directory:
+
+```bash
+# Use a JSON config file for Root CA
+./bin/pica --config ./configs/examples/root-ca.json
+
+# Use a TOML config file for Sub CA
+./bin/pica-web --config ./configs/examples/pica.toml
+```
+
+### Environment Variables
+
+You can configure PiCA using environment variables:
+
+```bash
+# Basic configuration
+export CA_TYPE=sub
+export CA_CONFIG=./configs/cfssl/sub-ca-config.json
+export CA_CERT=./certs/sub-ca.pem
+export PICA_PROVIDER=yubikey
+
+# Then run the application
+./bin/pica-web
+```
+
+### Command-Line Options
+
+Settings can also be passed via command-line arguments:
+
+```bash
+./bin/pica-web \
+  --ca-type sub \
+  --ca-config ./configs/cfssl/sub-ca-config.json \
+  --ca-cert ./certs/sub-ca.pem \
+  --port 8443 \
+  --provider yubikey
+```
+
+### Configuration Priority
+
+Settings are loaded with the following priority (highest to lowest):
+
+1. Command-line options
+2. Environment variables
+3. Configuration file
+4. Default values
+
+See the [Configuration README](configs/examples/README.md) for more details.
 
 ## Raspberry Pi Images
 
@@ -194,6 +250,8 @@ make test
   - `pica-web/`: Web server application
 - `internal/`: Internal packages
   - `ca/`: Certificate authority implementation
+  - `config/`: Configuration management
+  - `crypto/`: Cryptographic provider abstraction
   - `yubikey/`: YubiKey integration
   - `ui/`: Terminal UI components
 - `pkg/`: Public packages

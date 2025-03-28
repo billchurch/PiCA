@@ -1,0 +1,15 @@
+{
+  "log_level": "info",
+  "config_dir": "./configs",
+  "ca_type": "root",
+  "ca_config": "./configs/cfssl/root-ca-config.json",
+  "ca_cert": "./certs/root-ca.pem",
+  "crl_file": "./certs/root-ca.crl",
+  "ca_profile": "subca",
+  "provider": "yubikey",
+  "key_slot": "82",
+  "cert_dir": "./certs",
+  "csr_dir": "./csrs",
+  "log_dir": "./logs",
+  "db_dir": "./db"
+}

@@ -1,0 +1,23 @@
+{
+  "log_level": "info",
+  "config_dir": "./configs",
+  "ca_type": "sub",
+  "ca_config": "./configs/cfssl/sub-ca-config.json",
+  "ca_cert": "./certs/sub-ca.pem",
+  "crl_file": "./certs/sub-ca.crl",
+  "root_ca_cert": "./certs/root-ca.pem",
+  "root_ca_config": "./configs/cfssl/root-ca-config.json",
+  "ca_profile": "server",
+  "provider": "yubikey",
+  "key_slot": "83",
+  "web_port": 8443,
+  "web_root": "./web/html",
+  "web_tls_cert": "./certs/web.pem",
+  "web_tls_key": "./certs/web.key",
+  "enable_https": true,
+  "redirect_http": true,
+  "cert_dir": "./certs",
+  "csr_dir": "./csrs",
+  "log_dir": "./logs",
+  "db_dir": "./db"
+}

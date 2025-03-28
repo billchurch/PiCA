@@ -2,10 +2,13 @@ package pages
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/billchurch/PiCA/internal/ca"
 	"github.com/billchurch/PiCA/internal/ca/commands"
+	"github.com/billchurch/PiCA/internal/config"
 	"github.com/billchurch/PiCA/internal/crypto"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -20,14 +23,26 @@ type SubCAModel struct {
 	focusIndex  int
 	message     string
 	initialized bool
+	config      *config.Config // Add configuration
 }
 
-// NewSubCAModel creates a new SubCAModel
+// NewSubCAModel creates a new SubCAModel without configuration
 func NewSubCAModel(styles Styles) SubCAModel {
+	return NewSubCAModelWithConfig(styles, nil)
+}
+
+// NewSubCAModelWithConfig creates a new SubCAModel with configuration
+func NewSubCAModelWithConfig(styles Styles, cfg *config.Config) SubCAModel {
+	// Use default config if none provided
+	if cfg == nil {
+		cfg = config.DefaultConfig()
+	}
+
 	m := SubCAModel{
 		styles:  styles,
 		inputs:  make([]textinput.Model, 6),
 		message: "",
+		config:  cfg,
 	}
 
 	// Configure inputs
@@ -38,37 +53,72 @@ func NewSubCAModel(styles Styles) SubCAModel {
 	t.Focus()
 	t.CharLimit = 100
 	t.Width = 50
+	// Pre-fill from configuration if available
+	if cfg.CAConfigFile != "" {
+		t.SetValue(cfg.CAConfigFile)
+	} else {
+		t.SetValue(fmt.Sprintf("%s/cfssl/sub-ca-config.json", cfg.ConfigDir))
+	}
 	m.inputs[0] = t
 
 	t = textinput.New()
 	t.Placeholder = "Path to Sub CA CSR file"
 	t.CharLimit = 100
 	t.Width = 50
+	// Pre-fill with default CSR file if not specified
+	if cfg.CAConfigFile != "" {
+		t.SetValue(strings.Replace(cfg.CAConfigFile, "config", "csr", 1))
+	} else {
+		t.SetValue(fmt.Sprintf("%s/cfssl/sub-ca-csr.json", cfg.ConfigDir))
+	}
 	m.inputs[1] = t
 
 	t = textinput.New()
 	t.Placeholder = "Path to save certificate"
 	t.CharLimit = 100
 	t.Width = 50
+	// Pre-fill with default certificate path
+	if cfg.CACertFile != "" {
+		t.SetValue(cfg.CACertFile)
+	} else {
+		t.SetValue(fmt.Sprintf("%s/sub-ca.pem", cfg.CertDir))
+	}
 	m.inputs[2] = t
 
 	t = textinput.New()
 	t.Placeholder = "Path to Root CA certificate"
 	t.CharLimit = 100
 	t.Width = 50
+	// Pre-fill with default root CA certificate path
+	if cfg.RootCACertFile != "" {
+		t.SetValue(cfg.RootCACertFile)
+	} else {
+		t.SetValue(fmt.Sprintf("%s/root-ca.pem", cfg.CertDir))
+	}
 	m.inputs[3] = t
 
 	t = textinput.New()
 	t.Placeholder = "Path to Root CA config file"
 	t.CharLimit = 100
 	t.Width = 50
+	// Pre-fill with default root CA config path
+	if cfg.RootCAConfigFile != "" {
+		t.SetValue(cfg.RootCAConfigFile)
+	} else {
+		t.SetValue(fmt.Sprintf("%s/cfssl/root-ca-config.json", cfg.ConfigDir))
+	}
 	m.inputs[4] = t
 
 	t = textinput.New()
 	t.Placeholder = "Profile (e.g., subca)"
 	t.CharLimit = 100
 	t.Width = 50
-	t.SetValue("subca")
+	// Pre-fill with default profile or from config
+	if cfg.CAProfile != "" {
+		t.SetValue(cfg.CAProfile)
+	} else {
+		t.SetValue("subca")
+	}
 	m.inputs[5] = t
 
 	return m
@@ -114,11 +164,29 @@ func (m SubCAModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Process the form
 				m.message = "Initializing Sub CA..."
 
-				// Create provider
-				provider, err := crypto.CreateDefaultProvider()
+				// Create provider using configuration or environment
+				var provider crypto.Provider
+				var err error
+				if m.config.ProviderType != "" {
+					// Force specific provider type
+					os.Setenv("PICA_PROVIDER", m.config.ProviderType)
+				}
+				
+				provider, err = crypto.CreateDefaultProvider()
 				if err != nil {
 					m.message = fmt.Sprintf("Error creating provider: %s", err)
 					return m, nil
+				}
+				defer provider.Close()
+
+				// Determine key slot
+				keySlot := crypto.SlotCA2 // Default to Sub CA slot
+				if m.config.KeySlot != "" {
+					// Convert hex string to slot
+					slotVal, err := strconv.ParseInt(m.config.KeySlot, 16, 64)
+					if err == nil {
+						keySlot = crypto.Slot(slotVal)
+					}
 				}
 
 				// Create Init command for Sub CA
@@ -127,7 +195,7 @@ func (m SubCAModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.inputs[0].Value(), // Config file
 					m.inputs[1].Value(), // CSR file
 					m.inputs[2].Value(), // Output cert
-					crypto.SlotCA2,      // Slot for Sub CA
+					keySlot,             // Slot for Sub CA
 				)
 
 				// Set the provider
@@ -145,6 +213,14 @@ func (m SubCAModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.message = "Sub CA initialized successfully!"
 					m.initialized = true
+					
+					// Update configuration with new values
+					m.config.CAConfigFile = m.inputs[0].Value()
+					m.config.CACertFile = m.inputs[2].Value()
+					m.config.RootCACertFile = m.inputs[3].Value()
+					m.config.RootCAConfigFile = m.inputs[4].Value()
+					m.config.CAProfile = m.inputs[5].Value()
+					m.config.CAType = "sub"
 				}
 			}
 		}
@@ -180,6 +256,7 @@ func (m SubCAModel) View() string {
 	} else {
 		b.WriteString(m.styles.successStyle.Render("✓ Sub CA has been initialized\n\n"))
 		b.WriteString("You can now use this Sub CA to issue end-entity certificates.\n")
+		b.WriteString(fmt.Sprintf("\nSub CA Certificate: %s\n", m.config.CACertFile))
 	}
 
 	if m.message != "" {

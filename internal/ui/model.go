@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/config"
 	"github.com/billchurch/PiCA/internal/ui/pages"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -64,20 +65,39 @@ type Model struct {
 	subCAModel     pages.SubCAModel
 	certManageRoot pages.CertManageModel
 	certManageSub  pages.CertManageModel
+	config         *config.Config // Add configuration
 }
 
+// NewModel creates a new UI model without configuration
 func NewModel() Model {
+	return NewModelWithConfig(nil)
+}
+
+// NewModelWithConfig creates a new UI model with configuration
+func NewModelWithConfig(cfg *config.Config) Model {
+	// Use default config if none provided
+	if cfg == nil {
+		cfg = config.DefaultConfig()
+	}
+
 	styles := pages.DefaultStyles()
+
+	// Determine initial page based on configuration
+	initialPage := rootCAPage
+	if cfg.CAType == "sub" {
+		initialPage = subCAPage
+	}
 
 	return Model{
 		keys:           keys,
 		help:           help.New(),
 		styles:         styles,
-		currentPage:    rootCAPage,
-		rootCAModel:    pages.NewRootCAModel(styles),
-		subCAModel:     pages.NewSubCAModel(styles),
-		certManageRoot: pages.NewCertManageModel(styles, ca.RootCA),
-		certManageSub:  pages.NewCertManageModel(styles, ca.SubCA),
+		currentPage:    initialPage,
+		rootCAModel:    pages.NewRootCAModelWithConfig(styles, cfg),
+		subCAModel:     pages.NewSubCAModelWithConfig(styles, cfg),
+		certManageRoot: pages.NewCertManageModelWithConfig(styles, ca.RootCA, cfg),
+		certManageSub:  pages.NewCertManageModelWithConfig(styles, ca.SubCA, cfg),
+		config:         cfg,
 	}
 }
 
@@ -121,10 +141,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subCAModel = newModel.(pages.SubCAModel)
 	case certManagementPage:
 		// Determine if we're managing Root CA or Sub CA certs
-		// For now, let's just use Sub CA cert management
+		// Based on current context or configuration
 		var newModel tea.Model
-		newModel, cmd = m.certManageSub.Update(msg)
-		m.certManageSub = newModel.(pages.CertManageModel)
+		if m.config.CAType == "root" {
+			newModel, cmd = m.certManageRoot.Update(msg)
+			m.certManageRoot = newModel.(pages.CertManageModel)
+		} else {
+			newModel, cmd = m.certManageSub.Update(msg)
+			m.certManageSub = newModel.(pages.CertManageModel)
+		}
 	}
 	cmds = append(cmds, cmd)
 
@@ -140,7 +165,11 @@ func (m Model) View() string {
 	case subCAPage:
 		content = m.subCAModel.View()
 	case certManagementPage:
-		content = m.certManageSub.View()
+		if m.config.CAType == "root" {
+			content = m.certManageRoot.View()
+		} else {
+			content = m.certManageSub.View()
+		}
 	}
 
 	help := m.help.View(m.keys)
