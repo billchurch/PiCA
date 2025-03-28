@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/ca/commands"
-	"github.com/billchurch/pica/internal/crypto"
-	"github.com/billchurch/pica/internal/yubikey"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/ca/commands"
+	"github.com/billchurch/PiCA/internal/crypto"
+	"github.com/billchurch/PiCA/internal/yubikey"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // RootCAModel represents the Root CA management page
 type RootCAModel struct {
-	width      int
-	height     int
-	styles     Styles
-	inputs     []textinput.Model
-	focusIndex int
-	message    string
+	width       int
+	height      int
+	styles      Styles
+	inputs      []textinput.Model
+	focusIndex  int
+	message     string
 	initialized bool
 }
 
@@ -95,7 +95,7 @@ func (m RootCAModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focusIndex == len(m.inputs)-1 {
 				// Process the form
 				m.message = "Initializing Root CA..."
-				
+
 				// Initialize the Root CA
 				cmd := commands.NewInitCommand(
 					ca.RootCA,
@@ -104,7 +104,7 @@ func (m RootCAModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.inputs[2].Value(),
 					crypto.FromYubiKeySlot(yubikey.SlotCA1),
 				)
-				
+
 				err := cmd.Execute()
 				if err != nil {
 					m.message = fmt.Sprintf("Error: %s", err)

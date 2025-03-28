@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/crypto"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/crypto"
 )
 
 // RevokeCommand represents the command to revoke a certificate
@@ -64,7 +64,7 @@ func (cmd *RevokeCommand) Execute() error {
 	if err != nil {
 		return fmt.Errorf("error revoking certificate: %w", err)
 	}
-	
+
 	fmt.Println("Certificate revoked successfully.")
 	return nil
 }

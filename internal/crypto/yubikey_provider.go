@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/billchurch/pica/internal/yubikey"
+	"github.com/billchurch/PiCA/internal/yubikey"
 )
 
 // YubiKeyProvider implements the Provider interface using a YubiKey
@@ -21,7 +21,7 @@ func NewYubiKeyProvider(opts map[string]interface{}) (Provider, error) {
 	if n, ok := opts["name"].(string); ok && n != "" {
 		name = n
 	}
-	
+
 	return &YubiKeyProvider{
 		name:      name,
 		yubikey:   nil,
@@ -46,7 +46,7 @@ func (p *YubiKeyProvider) Connect() error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to YubiKey: %w", err)
 	}
-	
+
 	p.yubikey = yk
 	p.connected = true
 	return nil
@@ -60,7 +60,7 @@ func (p *YubiKeyProvider) Close() error {
 		p.connected = false
 		return err
 	}
-	
+
 	p.connected = false
 	return nil
 }
@@ -70,10 +70,10 @@ func (p *YubiKeyProvider) GenerateKey(slot Slot, algorithm string, bits int) err
 	if !p.connected || p.yubikey == nil {
 		return ErrNotConnected
 	}
-	
+
 	// Convert Provider Slot to YubiKey PIVSlot
 	pivSlot := yubikey.PIVSlot(slot)
-	
+
 	// For now, just pass through to the YubiKey
 	// In a real implementation, we'd handle the algorithm and bits parameters
 	return p.yubikey.GenerateKey(pivSlot)
@@ -84,10 +84,10 @@ func (p *YubiKeyProvider) GetPublicKey(slot Slot) (crypto.PublicKey, error) {
 	if !p.connected || p.yubikey == nil {
 		return nil, ErrNotConnected
 	}
-	
+
 	// Convert Provider Slot to YubiKey PIVSlot
 	pivSlot := yubikey.PIVSlot(slot)
-	
+
 	return p.yubikey.GetPublicKey(pivSlot)
 }
 
@@ -96,10 +96,10 @@ func (p *YubiKeyProvider) Sign(slot Slot, digest []byte, opts crypto.SignerOpts)
 	if !p.connected || p.yubikey == nil {
 		return nil, ErrNotConnected
 	}
-	
+
 	// Convert Provider Slot to YubiKey PIVSlot
 	pivSlot := yubikey.PIVSlot(slot)
-	
+
 	// The YubiKey.Sign method doesn't take SignerOpts, so ignore it for now
 	// In a real implementation, we'd handle the SignerOpts appropriately
 	return p.yubikey.Sign(pivSlot, digest)
@@ -110,10 +110,10 @@ func (p *YubiKeyProvider) ImportCertificate(slot Slot, cert *x509.Certificate) e
 	if !p.connected || p.yubikey == nil {
 		return ErrNotConnected
 	}
-	
+
 	// Convert Provider Slot to YubiKey PIVSlot
 	pivSlot := yubikey.PIVSlot(slot)
-	
+
 	return p.yubikey.ImportCertificate(pivSlot, cert)
 }
 
@@ -122,10 +122,10 @@ func (p *YubiKeyProvider) GetCertificate(slot Slot) (*x509.Certificate, error) {
 	if !p.connected || p.yubikey == nil {
 		return nil, ErrNotConnected
 	}
-	
+
 	// Convert Provider Slot to YubiKey PIVSlot
 	pivSlot := yubikey.PIVSlot(slot)
-	
+
 	return p.yubikey.GetCertificate(pivSlot)
 }
 

@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/ca/commands"
-	"github.com/billchurch/pica/internal/crypto"
-	"github.com/billchurch/pica/internal/yubikey"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/ca/commands"
+	"github.com/billchurch/PiCA/internal/crypto"
+	"github.com/billchurch/PiCA/internal/yubikey"
 )
 
 // Server represents the API server
@@ -178,7 +178,7 @@ func (s *Server) handleListCertificates(w http.ResponseWriter, r *http.Request) 
 	// Process each file in the directory
 	for _, file := range files {
 		fileName := file.Name()
-		
+
 		// Skip directories and non-certificate files
 		if file.IsDir() || !(filepath.Ext(fileName) == ".pem" || filepath.Ext(fileName) == ".crt") {
 			continue
@@ -346,7 +346,7 @@ func (s *Server) handleRevokeCertificate(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"status": "success",
+		"status":  "success",
 		"message": "Certificate revoked successfully",
 	})
 }

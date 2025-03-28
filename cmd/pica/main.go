@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/billchurch/pica/internal/ui"
+	"github.com/billchurch/PiCA/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

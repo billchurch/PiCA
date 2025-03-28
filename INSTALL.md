@@ -22,7 +22,7 @@ For building custom Raspberry Pi images:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/billchurch/pica.git
+   git clone https://github.com/billchurch/PiCA.git
    cd pica
    ```
 

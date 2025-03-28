@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/ca/commands"
-	"github.com/billchurch/pica/internal/crypto"
-	"github.com/billchurch/pica/internal/yubikey"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/ca/commands"
+	"github.com/billchurch/PiCA/internal/crypto"
+	"github.com/billchurch/PiCA/internal/yubikey"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -38,33 +38,33 @@ func (i CertItem) FilterValue() string { return i.subject }
 func (i CertItem) Title() string { return i.subject }
 
 // Description implements list.Item interface
-func (i CertItem) Description() string { 
-	return fmt.Sprintf("SN: %s, Expires: %s, Status: %s", 
-		i.serialNumber, i.notAfter, i.status) 
+func (i CertItem) Description() string {
+	return fmt.Sprintf("SN: %s, Expires: %s, Status: %s",
+		i.serialNumber, i.notAfter, i.status)
 }
 
 // CertManageModel represents the certificate management page
 type CertManageModel struct {
-	width       int
-	height      int
-	styles      Styles
-	action      Action
-	caType      ca.CAType
-	inputs      []textinput.Model
-	focusIndex  int
-	message     string
-	certList    list.Model
+	width        int
+	height       int
+	styles       Styles
+	action       Action
+	caType       ca.CAType
+	inputs       []textinput.Model
+	focusIndex   int
+	message      string
+	certList     list.Model
 	certificates []CertItem
 }
 
 // NewCertManageModel creates a new CertManageModel
 func NewCertManageModel(styles Styles, caType ca.CAType) CertManageModel {
 	m := CertManageModel{
-		styles:   styles,
-		action:   ActionNone,
-		caType:   caType,
-		inputs:   make([]textinput.Model, 0),
-		message:  "",
+		styles:       styles,
+		action:       ActionNone,
+		caType:       caType,
+		inputs:       make([]textinput.Model, 0),
+		message:      "",
 		certificates: make([]CertItem, 0),
 	}
 
@@ -97,7 +97,7 @@ func NewCertManageModel(styles Styles, caType ca.CAType) CertManageModel {
 
 	m.certList = list.New(listItems, list.NewDefaultDelegate(), 0, 0)
 	m.certList.Title = "Certificate List"
-	
+
 	return m
 }
 
@@ -230,24 +230,24 @@ func (m CertManageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.action == ActionSign && m.focusIndex == len(m.inputs)-1 {
 				// Process sign form
 				m.message = "Signing certificate..."
-				
+
 				// Create CA instance
 				ca := ca.NewCA(
 					m.caType,
 					m.inputs[3].Value(), // CA config
-					"", // Key file not needed when using YubiKey
-					"", // Cert file not needed for signing
+					"",                  // Key file not needed when using YubiKey
+					"",                  // Cert file not needed for signing
 				)
-				
+
 				// Create sign command
 				cmd := commands.NewSignCommand(
 					ca,
-					m.inputs[0].Value(), // CSR
-					m.inputs[1].Value(), // Output cert
-					m.inputs[2].Value(), // Profile
-					crypto.FromYubiKeySlot(yubikey.SlotCA1),    // YubiKey slot
+					m.inputs[0].Value(),                     // CSR
+					m.inputs[1].Value(),                     // Output cert
+					m.inputs[2].Value(),                     // Profile
+					crypto.FromYubiKeySlot(yubikey.SlotCA1), // YubiKey slot
 				)
-				
+
 				err := cmd.Execute()
 				if err != nil {
 					m.message = fmt.Sprintf("Error: %s", err)
@@ -257,23 +257,23 @@ func (m CertManageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.action == ActionRevoke && m.focusIndex == len(m.inputs)-1 {
 				// Process revoke form
 				m.message = "Revoking certificate..."
-				
+
 				// Create CA instance
 				ca := ca.NewCA(
 					m.caType,
 					m.inputs[2].Value(), // CA config
-					"", // Key file not needed when using YubiKey
-					"", // Cert file not needed for revocation
+					"",                  // Key file not needed when using YubiKey
+					"",                  // Cert file not needed for revocation
 				)
-				
+
 				// Create revoke command
 				cmd := commands.NewRevokeCommand(
 					ca,
-					m.inputs[0].Value(), // Serial number
-					m.inputs[1].Value(), // Reason
-					crypto.FromYubiKeySlot(yubikey.SlotCA1),    // YubiKey slot
+					m.inputs[0].Value(),                     // Serial number
+					m.inputs[1].Value(),                     // Reason
+					crypto.FromYubiKeySlot(yubikey.SlotCA1), // YubiKey slot
 				)
-				
+
 				err := cmd.Execute()
 				if err != nil {
 					m.message = fmt.Sprintf("Error: %s", err)
@@ -286,7 +286,7 @@ func (m CertManageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		
+
 		if m.action == ActionList {
 			m.certList.SetSize(msg.Width-4, msg.Height-10)
 		}
@@ -315,7 +315,7 @@ func (m CertManageModel) View() string {
 	} else {
 		title += " (Sub CA)"
 	}
-	
+
 	b.WriteString(m.styles.titleStyle.Render(title))
 	b.WriteString("\n\n")
 
@@ -325,7 +325,7 @@ func (m CertManageModel) View() string {
 		b.WriteString("[s] Sign a certificate\n")
 		b.WriteString("[r] Revoke a certificate\n")
 		b.WriteString("[l] List certificates\n")
-		
+
 	case ActionSign:
 		b.WriteString("Sign a new certificate:\n\n")
 		for i, input := range m.inputs {
@@ -335,7 +335,7 @@ func (m CertManageModel) View() string {
 			}
 		}
 		b.WriteString("\n\n[esc] Cancel")
-		
+
 	case ActionRevoke:
 		b.WriteString("Revoke a certificate:\n\n")
 		for i, input := range m.inputs {
@@ -345,7 +345,7 @@ func (m CertManageModel) View() string {
 			}
 		}
 		b.WriteString("\n\n[esc] Cancel")
-		
+
 	case ActionList:
 		b.WriteString(m.certList.View())
 		b.WriteString("\n\n[esc] Back")

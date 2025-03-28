@@ -1,8 +1,8 @@
 package ui
 
 import (
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/ui/pages"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/ui/pages"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -68,7 +68,7 @@ type Model struct {
 
 func NewModel() Model {
 	styles := pages.DefaultStyles()
-	
+
 	return Model{
 		keys:           keys,
 		help:           help.New(),
@@ -144,12 +144,12 @@ func (m Model) View() string {
 	}
 
 	help := m.help.View(m.keys)
-	
+
 	// Add navigation bar
 	nav := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#AAAAAA")).
 		Render("Press TAB to switch views • ? for help • q to quit")
-	
+
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		lipgloss.NewStyle().

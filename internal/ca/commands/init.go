@@ -7,22 +7,22 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/crypto"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/crypto"
 	"github.com/cloudflare/cfssl/csr"
 )
 
 // InitCommand represents the command to initialize a new CA
 type InitCommand struct {
-	CAType          ca.CAType
-	ConfigFile      string
-	CSRFile         string
-	CertificateFile string
-	Slot            crypto.Slot
-	Provider        crypto.Provider
-	RootCACertFile  string
+	CAType           ca.CAType
+	ConfigFile       string
+	CSRFile          string
+	CertificateFile  string
+	Slot             crypto.Slot
+	Provider         crypto.Provider
+	RootCACertFile   string
 	RootCAConfigFile string
-	Profile         string
+	Profile          string
 }
 
 // NewInitCommand creates a new InitCommand

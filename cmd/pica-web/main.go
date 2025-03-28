@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/yubikey"
-	"github.com/billchurch/pica/web/api"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/yubikey"
+	"github.com/billchurch/PiCA/web/api"
 )
 
 func main() {

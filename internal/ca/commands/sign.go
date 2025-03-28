@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/crypto"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/crypto"
 )
 
 // SignCommand represents the command to sign a certificate
@@ -70,8 +70,8 @@ func (cmd *SignCommand) Execute() error {
 		for name := range configData.Signing.Profiles {
 			profiles = append(profiles, name)
 		}
-		
-		return fmt.Errorf("profile '%s' not found. Available profiles: %s", 
+
+		return fmt.Errorf("profile '%s' not found. Available profiles: %s",
 			cmd.Profile, strings.Join(profiles, ", "))
 	}
 
@@ -84,7 +84,7 @@ func (cmd *SignCommand) Execute() error {
 			return fmt.Errorf("error initializing provider: %w", err)
 		}
 	}
-	
+
 	if cmd.CA.Provider.IsHardware() {
 		fmt.Println("Ready to sign certificate.")
 		fmt.Println("Using hardware security module:", cmd.CA.Provider.Name())
@@ -100,7 +100,7 @@ func (cmd *SignCommand) Execute() error {
 	if err != nil {
 		return fmt.Errorf("error signing certificate: %w", err)
 	}
-	
+
 	// Write the certificate to file if requested
 	if cmd.CertFile != "" {
 		if err := os.WriteFile(cmd.CertFile, certPEM, 0644); err != nil {
@@ -110,6 +110,6 @@ func (cmd *SignCommand) Execute() error {
 	} else {
 		fmt.Println("Certificate signed successfully.")
 	}
-	
+
 	return nil
 }

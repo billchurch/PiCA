@@ -9,7 +9,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](co
 ## Getting Started
 
 1. Fork the repository
-2. Clone your forked repository: `git clone https://github.com/billchurch/pica.git`
+2. Clone your forked repository: `git clone https://github.com/billchurch/PiCA.git`
 3. Review the [GOALS.md](GOALS.md) file to understand project progress and priorities
 4. Create a new branch for your feature or bugfix: `git checkout -b feature/your-feature-name`
 5. Make your changes

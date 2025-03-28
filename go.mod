@@ -1,4 +1,4 @@
-module github.com/billchurch/pica
+module github.com/billchurch/PiCA
 
 go 1.21
 

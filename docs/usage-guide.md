@@ -562,5 +562,5 @@ If the PIN is locked due to too many incorrect attempts:
 If you encounter issues not covered in this troubleshooting guide:
 
 1. Check the logs for detailed error messages
-2. Consult the [GitHub repository](https://github.com/billchurch/pica) for known issues
+2. Consult the [GitHub repository](https://github.com/billchurch/PiCA) for known issues
 3. Open a new issue on GitHub with detailed information about the problem

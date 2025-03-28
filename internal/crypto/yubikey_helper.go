@@ -3,7 +3,7 @@
 package crypto
 
 import (
-	"github.com/billchurch/pica/internal/yubikey"
+	"github.com/billchurch/PiCA/internal/yubikey"
 )
 
 // FromYubiKeySlot converts a yubikey.PIVSlot to a crypto.Slot

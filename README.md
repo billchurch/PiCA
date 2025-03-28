@@ -67,7 +67,7 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/billchurch/pica.git
+   git clone https://github.com/billchurch/PiCA.git
    cd pica
    ```
 
@@ -177,7 +177,7 @@ The terminal-based UI provides:
 
 ```bash
 # Get the code
-git clone https://github.com/billchurch/pica.git
+git clone https://github.com/billchurch/PiCA.git
 cd pica
 
 # Build the binaries

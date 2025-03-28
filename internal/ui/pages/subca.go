@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/billchurch/pica/internal/ca"
-	"github.com/billchurch/pica/internal/ca/commands"
-	"github.com/billchurch/pica/internal/crypto"
+	"github.com/billchurch/PiCA/internal/ca"
+	"github.com/billchurch/PiCA/internal/ca/commands"
+	"github.com/billchurch/PiCA/internal/crypto"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
