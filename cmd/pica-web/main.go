@@ -22,21 +22,11 @@ func main() {
 		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	// Validate required settings
-	if cfg.CAConfigFile == "" {
-		log.Fatal("Config file is required. Use --ca-config flag or CA_CONFIG environment variable.")
-	}
-	if cfg.CACertFile == "" {
-		log.Fatal("Certificate file is required. Use --ca-cert flag or CA_CERT environment variable.")
-	}
+	// Configuration validation is handled by config.Validate()
 
-	// Parse YubiKey slot
-	slot := yubikey.PIVSlot(0)
-	slotVal, err := strconv.ParseInt(cfg.KeySlot, 16, 64)
-	if err != nil {
-		log.Fatalf("Invalid YubiKey PIV slot: %s", cfg.KeySlot)
-	}
-	slot = yubikey.PIVSlot(slotVal)
+	// Parse YubiKey slot (format already validated in config.Validate)
+	slotVal, _ := strconv.ParseInt(cfg.KeySlot, 16, 64)
+	slot := yubikey.PIVSlot(slotVal)
 
 	// Determine CA type
 	caType := ca.SubCA
@@ -93,12 +83,14 @@ func main() {
 	log.Printf("Web root: %s", webDir)
 	
 	// Start with appropriate protocol
-	if cfg.EnableHTTPS && cfg.WebTLSCert != "" && cfg.WebTLSKey != "" {
+	if cfg.EnableHTTPS {
+		// We can safely use the values here because they're validated in config.Validate()
 		log.Printf("HTTPS enabled with certificate: %s", cfg.WebTLSCert)
 		if err := http.ListenAndServeTLS(addr, cfg.WebTLSCert, cfg.WebTLSKey, nil); err != nil {
 			log.Fatalf("Error starting HTTPS server: %v", err)
 		}
 	} else {
+		log.Printf("HTTP mode enabled (consider using HTTPS for production)")
 		if err := server.StartServer(addr); err != nil {
 			log.Fatalf("Error starting HTTP server: %v", err)
 		}

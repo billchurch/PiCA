@@ -170,7 +170,35 @@ func (cfg *Config) LoadDefaults() error {
 
 // Validate checks if the configuration is valid
 func (cfg *Config) Validate() error {
-	// TODO: Add validation for required fields
+	// Validate required CA settings based on if we need a web server
+	if os.Args[0] == "pica-web" || strings.Contains(os.Args[0], "pica-web") {
+		// For the web server, we definitely need CA config and certificate
+		if cfg.CAConfigFile == "" {
+			return fmt.Errorf("CA config file is required for the web server")
+		}
+		if cfg.CACertFile == "" {
+			return fmt.Errorf("CA certificate file is required for the web server")
+		}
+	}
+	
+	// Validate YubiKey slot format if specified
+	if cfg.KeySlot != "" {
+		_, err := strconv.ParseInt(cfg.KeySlot, 16, 64)
+		if err != nil {
+			return fmt.Errorf("invalid YubiKey PIV slot format (must be hex): %s", cfg.KeySlot)
+		}
+	}
+	
+	// Validate HTTPS settings
+	if cfg.EnableHTTPS {
+		if cfg.WebTLSCert == "" {
+			return fmt.Errorf("TLS certificate file path required when HTTPS is enabled")
+		}
+		if cfg.WebTLSKey == "" {
+			return fmt.Errorf("TLS key file path required when HTTPS is enabled")
+		}
+	}
+	
 	return nil
 }
 

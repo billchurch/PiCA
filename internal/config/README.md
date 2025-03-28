@@ -2,10 +2,12 @@
 
 This package provides a unified configuration system for PiCA with support for:
 
-1. Command-line flags
+1. Command-line flags (highest priority)
 2. Environment variables 
 3. Configuration files (JSON/TOML)
-4. Default values
+4. Default values (lowest priority)
+
+The package also handles validation of configuration values to ensure required fields are present and values are properly formatted.
 
 ## Basic Usage
 
@@ -42,6 +44,16 @@ Example:
 // New field in Config struct
 MaxConnections int `env:"MAX_CONNECTIONS" flag:"max-connections" config:"max_connections" default:"100"`
 ```
+
+## Validation
+
+The configuration system validates settings after loading from all sources. The `Validate()` method checks:
+
+1. Required fields based on application type (e.g., CA config and cert files required for web server)
+2. YubiKey slot format (must be valid hex)
+3. HTTPS settings (TLS certificate and key files required when HTTPS is enabled)
+
+Validation errors are returned from the `Load()` function, preventing the application from starting with invalid configuration.
 
 ## Testing
 
