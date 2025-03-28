@@ -4,18 +4,19 @@ Thank you for your interest in contributing to PiCA! This document provides guid
 
 ## Code of Conduct
 
-By participating in this project, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
+By participating in this project, you agree to abide by our [Code of Conduct](code_of_conduct.md). We are committed to providing a welcoming and inclusive environment for all contributors.
 
 ## Getting Started
 
 1. Fork the repository
 2. Clone your forked repository: `git clone https://github.com/billchurch/pica.git`
-3. Create a new branch for your feature or bugfix: `git checkout -b feature/your-feature-name`
-4. Make your changes
-5. Run tests: `make test`
-6. Commit your changes: `git commit -m "Add your detailed commit message"`
-7. Push to your branch: `git push origin feature/your-feature-name`
-8. Open a Pull Request against the main repository
+3. Review the [GOALS.md](GOALS.md) file to understand project progress and priorities
+4. Create a new branch for your feature or bugfix: `git checkout -b feature/your-feature-name`
+5. Make your changes
+6. Run tests: `make test`
+7. Commit your changes: `git commit -m "Add your detailed commit message"`
+8. Push to your branch: `git push origin feature/your-feature-name`
+9. Open a Pull Request against the main repository
 
 ## Development Environment
 
@@ -76,6 +77,7 @@ make run-web
 - Provide a clear description of the proposed feature
 - Explain why the feature would be valuable
 - Consider how the feature fits into the project's goals
+- Check [GOALS.md](GOALS.md) to see if your feature is already planned or might align with existing roadmap items
 
 ## Security Issues
 
