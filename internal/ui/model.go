@@ -93,10 +93,10 @@ func NewModelWithConfig(cfg *config.Config) Model {
 		help:           help.New(),
 		styles:         styles,
 		currentPage:    initialPage,
-		rootCAModel:    pages.NewRootCAModelWithConfig(styles, cfg),
-		subCAModel:     pages.NewSubCAModelWithConfig(styles, cfg),
-		certManageRoot: pages.NewCertManageModelWithConfig(styles, ca.RootCA, cfg),
-		certManageSub:  pages.NewCertManageModelWithConfig(styles, ca.SubCA, cfg),
+		rootCAModel:    pages.NewRootCAModel(styles),
+		subCAModel:     pages.NewSubCAModel(styles),
+		certManageRoot: pages.NewCertManageModel(styles, ca.RootCA),
+		certManageSub:  pages.NewCertManageModel(styles, ca.SubCA),
 		config:         cfg,
 	}
 }
@@ -141,7 +141,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subCAModel = newModel.(pages.SubCAModel)
 	case certManagementPage:
 		// Determine if we're managing Root CA or Sub CA certs
-		// Based on current context or configuration
 		var newModel tea.Model
 		if m.config.CAType == "root" {
 			newModel, cmd = m.certManageRoot.Update(msg)

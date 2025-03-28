@@ -10,7 +10,6 @@ import (
 	"github.com/billchurch/PiCA/internal/ca/commands"
 	"github.com/billchurch/PiCA/internal/config"
 	"github.com/billchurch/PiCA/internal/crypto"
-	"github.com/billchurch/PiCA/internal/yubikey"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )

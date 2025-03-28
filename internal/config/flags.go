@@ -16,7 +16,6 @@ func (cfg *Config) RegisterFlags() *flag.FlagSet {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		flagName := field.Tag.Get("flag")
-		defaultVal := field.Tag.Get("default")
 		description := field.Tag.Get("desc")
 		if description == "" {
 			description = "Configuration for " + field.Name

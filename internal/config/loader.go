@@ -1,9 +1,12 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/pelletier/go-toml"
 )
 
 // Load creates a Config with the following priority:
